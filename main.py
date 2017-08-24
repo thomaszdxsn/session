@@ -39,7 +39,7 @@ class BaseHandler(web.RequestHandler):
     def prepare(self):
         """为每个链接建立一个session"""
         self.session = Session(self)
-        super(Application, self).prepare()
+        super(BaseHandler, self).prepare()
 
     def get_current_user(self):
         session_id = self.get_secure_cookie("session_id", None)
