@@ -55,3 +55,9 @@ class Session(object):
         if not item in self._skip:
             return self._redis.hdel(self._id, item)
         super(Session, self).__delattr__(item)
+
+
+class SessionMixin(object):
+    def prepare(self):
+        self.session = Session(self)
+        super(SessionMixin, self).prepare()

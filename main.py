@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import os
 
 import redis
@@ -29,7 +30,7 @@ class Application(web.Application):
             "cookie_secret": "sdafwerweqr1235",
             "session_expire": 1200
         }
-        super().__init__(handlers, **settings)
+        super(Application, self).__init__(handlers, **settings)
         self.db = pymongo.MongoClient()['auth']     # 取出mongoDB中的auth数据库
         self.redis = redis.StrictRedis()
 
@@ -38,7 +39,7 @@ class BaseHandler(web.RequestHandler):
     def prepare(self):
         """为每个链接建立一个session"""
         self.session = Session(self)
-        super().prepare()
+        super(Application, self).prepare()
 
     def get_current_user(self):
         session_id = self.get_secure_cookie("session_id", None)
