@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Session and Permission</title>
+</head>
+<body>
+    <p>
+        <a href="/">login</a>
+        <a href="/logout">logout</a>
+        <a href="/admin">permission-admin</a>
+        <a href="#">permission-moderator</a>
+        <a href="#">permission-user</a>
+    </p>
+    current user：
+    {% if not current_user %}匿名
+    <form method="post">
+        <input type="text" name="username">
+        <input type="password" name="password">
+        <input type="submit" value="submit">
+    </form>
+    {% else %}{{ current_user['username'] }}{% end %}
+</body>
+</html>
