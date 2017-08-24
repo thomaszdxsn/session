@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import os
 import time
 import hashlib
@@ -41,16 +42,16 @@ class Session(object):
     def __getattr__(self, item):
         if self._id:
             return self._redis.hget(self._id, item)
-        return super().__getattribute__(item)
+        return super(Session, self).__getattribute__(item)
 
     def __setattr__(self, key, value):
         """在为session对象设置属性后，进行session的更新或创建"""
         if not key in self._skip:
             self.init_session()
             self._redis.hset(self._id, key, value)
-        super().__setattr__(key, value)
+        super(Session, self).__setattr__(key, value)
 
     def __delattr__(self, item):
         if not item in self._skip:
             return self._redis.hdel(self._id, item)
-        super().__delattr__(item)
+        super(Session, self).__delattr__(item)
