@@ -20,6 +20,15 @@ session_id作为键名称，存入redis的hash数据结构中，这个session_id
 并且可以设置session过期时间，通过redis方法`expire`实现，可以在settings中
 添加一个`session_expire`来达到目的，单位为**秒**。
 
+## permission
+
+权限系统参考flasky，通过16进制数字来代表权限，多权限的角色由通过位运算来获得。
+
+TODO：
+
+* 实现model-permission
+* 实现object-permission
+
 ## 准备
 
 * 需要redis, mongoDB
