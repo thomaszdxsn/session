@@ -31,7 +31,13 @@ class Session(object):
         while True:
             rand = os.urandom(16)
             now = time.time()
-            result = "{!s}{!s}{!s}{!s}".format(rand, now, ip, secret_key).encode()
+
+            for i in [secret_key, ip, rand, now]:
+                print type(i), i
+            try:
+                result = "{!s}{!s}{!s}{!s}".format(rand, now, ip, secret_key).encode()
+            except UnicodeDecodeError:
+                result = "{!s}{!s}{!s}{!s}".format(rand, now, ip, secret_key)           # 兼容python2
 
             session_id = hashlib.sha1(result)
             session_id = self._prefix + session_id.hexdigest()
@@ -58,6 +64,9 @@ class Session(object):
 
 
 class SessionMixin(object):
+    """为RequestHandler对象提供的session mixin
+    能够改写handler对象的prepare方法，在最开始的时候就加入一个session对象
+    """
     def prepare(self):
         self.session = Session(self)
         super(SessionMixin, self).prepare()

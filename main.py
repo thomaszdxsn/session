@@ -12,7 +12,7 @@ from tornado import options
 from tornado.options import define, options
 
 from session import Session
-from decorator import permission_required
+from permission import permission_required
 
 define('port', default=8000, type=int)
 
@@ -23,12 +23,15 @@ class Application(web.Application):
             (r'/', IndexHandler),
             (r'/logout', LogoutHandler),
             (r'/admin', AdminOnlyHandler),
+            (r'/manager', ManagerHandler),
+            (r'/user', UserHandler),
         ]
         settings = {
             'debug': True,
             'template_path': os.path.join(os.path.dirname(__file__), 'templates'),
             "cookie_secret": "sdafwerweqr1235",
-            "session_expire": 1200
+            "session_expire": 60 * 60 * 24,
+            'login_url': '/',
         }
         super(Application, self).__init__(handlers, **settings)
         self.db = pymongo.MongoClient()['auth']     # 取出mongoDB中的auth数据库
@@ -39,6 +42,7 @@ class BaseHandler(web.RequestHandler):
     def prepare(self):
         """为每个链接建立一个session"""
         self.session = Session(self)
+        print self.session._id, "prepare"
         super(BaseHandler, self).prepare()
 
     def get_current_user(self):
@@ -48,6 +52,10 @@ class BaseHandler(web.RequestHandler):
         username = self.application.redis.hget(session_id, 'username').decode()
         user = self.application.db.users.find_one({'username': username})
         return user
+
+    def write_error(self, status_code, **kwargs):
+        if status_code == 403:
+            self.write("403: You don't have permission")
 
 
 class IndexHandler(BaseHandler):
@@ -64,10 +72,12 @@ class IndexHandler(BaseHandler):
                                                      "password": password})
         if result:
             self.session.username = result['username']
-        self.redirect('/')
+            next = self.get_argument('next', '/')
+            self.redirect(next)
 
 
 class LogoutHandler(BaseHandler):
+    @web.authenticated
     def get(self):
         self.clear_cookie('session_id')
         self.redirect('/')
@@ -76,11 +86,19 @@ class LogoutHandler(BaseHandler):
 class AdminOnlyHandler(BaseHandler):
     @permission_required('admin')
     def get(self):
-        self.write("hello, admin")
+        self.write("hello, {}, this is admin page".format(self.current_user['username']))
 
-    def write_error(self, status_code, **kwargs):
-        if status_code == 403:
-            print(self.get_status())
+
+class ManagerHandler(BaseHandler):
+    @permission_required('manager')
+    def get(self):
+        self.write("hello, {}, this is manager page".format(self.current_user['username']))
+
+
+class UserHandler(BaseHandler):
+    @permission_required('user')
+    def get(self):
+        self.write("hello, {}, this is user page".format(self.current_user['username']))
 
 
 if __name__ == '__main__':
